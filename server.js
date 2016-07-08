@@ -1,11 +1,7 @@
 var express = require('express');
 var app = express();
-var config;
 
-try { config = require('./config.js'); }
-catch (err) { console.log('module config not found.'); }
-
-var port = process.env.PORT || config.serverPort;
+var port = process.env.PORT || 3000;
 
 app.get('/', function (req, res) {
   res.send('Hello World');
