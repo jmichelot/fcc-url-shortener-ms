@@ -1,0 +1,12 @@
+{
+  "name": "request-header-parser-microservice",
+  "version": "1.0.0",
+  "description": "A FCC Project : request header parser microservice",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+  }
+}
