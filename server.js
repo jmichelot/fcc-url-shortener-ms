@@ -23,8 +23,11 @@ mongo.connect(mongoUrl, function (err, db) {
   shortener.get('*', function(req, res) {
     var originalUrl = url.parse(req.params[0].slice(1)).href;
     var protocol = url.parse(req.params[0].slice(1)).protocol;
-    var doc = { 'originalUrl': originalUrl, 'shortUrl': 1 };
-    var shortUrl = 1;
+    var doc = { 
+      'originalUrl': originalUrl, 
+      'shortUrl': req.protocol + '//' + req.hostname + '/' 
+    };
+    var counter = 1;
 
     if (protocol != 'http:' && protocol != 'https:') {
       res.json({'error': 'Invalid URL'});
@@ -36,6 +39,7 @@ mongo.connect(mongoUrl, function (err, db) {
             // shortUrls doesn't exist, needs to be created
             db.createCollection('shortUrls', function (err, collection) {
               if (err) throw new Error('createCollection failed.');
+              doc.shortUrl += '1';
               collection.insert(doc);
               delete doc._id;
               res.json(doc);
@@ -45,9 +49,8 @@ mongo.connect(mongoUrl, function (err, db) {
             // shortUrls exists, we need to find the max number for short urls
             var collection = db.collection('shortUrls');
             collection.find()
-              .sort({'shortUrl': -1}).limit(1)
-              .toArray(function(err, elements) {
-                doc.shortUrl = elements[0]['shortUrl'] + 1;
+              .count(function (err, count) {
+                if (count) doc.shortUrl += count+1;
                 collection.insert(doc);
                 delete doc._id;
                 res.json(doc);
@@ -63,8 +66,9 @@ mongo.connect(mongoUrl, function (err, db) {
   });
 
   app.get('/:id', function(req, res) {
+    var shortUrl = req.protocol + '//' + req.hostname + '/'+ req.params.id;
     db.collection('shortUrls')
-      .find({ 'shortUrl': { $eq: +req.params.id } }, { _id: 0 })
+      .find({ 'shortUrl': { $eq: shortUrl } }, { _id: 0 })
       .toArray(function(err, elements) {
         if (err) throw err;
         var originalUrl = (elements.length) ? elements[0].originalUrl : null;
